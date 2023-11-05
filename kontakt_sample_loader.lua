@@ -26,23 +26,23 @@ for _, file in filesystem.directoryRecursive(path) do
   if filesystem.isRegularFile(file) then
     if filesystem.extension(file) == ".wav" then
       -- group
-      local groupname = text:match("_G%w+")
+      local groupname = file:match("_G%w+")
       if groupname then
         groupname = groupname:sub(3)
       end
       -- velocity
       local vel_min = 1
       local vel_max = 127
-      for param1, param2 in text:gmatch("_V(%d+)_(%d+)") do
-        vel_min = math.max(1, param1)
-        vel_max = math.min(127, param2)
+      for param1, param2 in file:gmatch("_V(%d+)_(%d+)") do
+        vel_min = math.max(1, tonumber(param1))
+        vel_max = math.min(127, tonumber(param2))
       end
       -- keyrange
       local keyrange_min = 0
       local keyrange_max = 127
-      for param1, param2 in text:gmatch("_K(%d+)_(%d+)") do
-        keyrange_min = math.max(0, param1)
-        keyrange_max = math.min(127, param2)
+      for param1, param2 in file:gmatch("_K(%d+)_(%d+)") do
+        keyrange_min = math.max(0, tonumber(param1))
+        keyrange_max = math.min(127, tonumber(param2))
       end
 
       print(file)
@@ -53,6 +53,8 @@ for _, file in filesystem.directoryRecursive(path) do
       -- create zone
       local zone = Zone()
       zone.file = file
+      zone.velocityRange.low = vel_min
+      zone.velocityRange.high = vel_max
       zone.keyRange.low = keyrange_min
       zone.keyRange.high = keyrange_max
       zone.rootKey = zone.keyRange.low
@@ -63,11 +65,11 @@ for _, file in filesystem.directoryRecursive(path) do
         target_group = findGroup(groupname)
         if not target_group then
           target_group = Group()
-          target_group.name = name
+          target_group.name = groupname
           instrument.groups:add(target_group)
         end
       end
-      target_group:add(zone);
+      target_group.zones:add(zone);
     end
   end
 end
